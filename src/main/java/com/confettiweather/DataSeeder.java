@@ -25,7 +25,7 @@ public class DataSeeder implements CommandLineRunner {
     private final ArtistProfileService artistProfileService;
 
     private static final String ALBUM_SPOTIFY = "https://open.spotify.com/album/0BB8BawGzPa6yNdyf9vGBb";
-    private static final String GENRE = "Roots · Folk · Country · Indie";
+    private static final String GENRE = "Indie · Industrial Static · Moody Pop · Rock";
     private static final int YEAR = 2026;
 
     @Override
@@ -244,7 +244,7 @@ public class DataSeeder implements CommandLineRunner {
         if (profile.getWebsiteUrl() == null || profile.getWebsiteUrl().isBlank()) {
             profile.setName("Confetti Weather");
             profile.setWebsiteUrl("");
-            profile.setTagline("Roots · Folk · Country · Indie");
+            profile.setTagline("Indie · Industrial Static · Moody Pop · Rock");
             profile.setSpotifyUrl("https://open.spotify.com/album/0BB8BawGzPa6yNdyf9vGBb");
             artistProfileService.updateProfile(profile);
         }
@@ -252,11 +252,11 @@ public class DataSeeder implements CommandLineRunner {
 
     private void seedSiteContent() {
         List<SiteContent> defaults = List.of(
-            new SiteContent("about_text_1",   "Paragraph 1",     "About",      "Confetti Weather is an AI-crafted musical project steeped in the sights, sounds, and soul of the American South. We write songs that smell like cut grass and pine needles, that taste like sweet tea and wild blackberry wine, that sound like the world slowing down just enough to breathe."),
-            new SiteContent("about_text_2",   "Paragraph 2",     "About",      "Drawing from the deep wells of roots music, folk storytelling, country tradition, and indie spirit, Confetti Weather creates sonic landscapes where every note carries the weight of a summer memory and the lightness of a firefly blinking at dusk."),
-            new SiteContent("about_tagline",  "About Tagline",   "About",      "Born from Red Clay Roads & Summer Dreams"),
-            new SiteContent("about_quote",    "About Quote",     "About",      "\"Livin' on the scent of wild blackberry wine, pine needles warm and that kudzu vine.\""),
-            new SiteContent("about_quote_cit","About Citation",  "About",      "— Honeysuckle Summer Breeze")
+            new SiteContent("about_text_1",   "Paragraph 1",     "About",      "Confetti Weather is an AI-crafted musical project steeped in the sights, sounds, and soul of the industrial night. We write songs that smell like smoke and marigolds, that taste like gasoline and regret, that sound like striking a match in the dead of night and watching it burn bright."),
+            new SiteContent("about_text_2",   "Paragraph 2",     "About",      "Drawing from the deep wells of indie rock, industrial synth, and atmospheric pop, Confetti Weather creates sonic landscapes where every note carries the weight of a burned bridge and the lightness of a spark catching in the wind."),
+            new SiteContent("about_tagline",  "About Tagline",   "About",      "Born from Matches & Gasoline"),
+            new SiteContent("about_quote",    "About Quote",     "About",      "\"You were marigold and gasoline, burned so bright, so in between living and letting go.\""),
+            new SiteContent("about_quote_cit","About Citation",  "About",      "— Marigold and Gasoline")
         );
         for (SiteContent c : defaults) {
             siteContentService.seedIfEmpty(List.of(c));

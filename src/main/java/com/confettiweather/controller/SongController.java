@@ -67,4 +67,11 @@ public class SongController {
         songService.deleteSong(id);
         return ResponseEntity.noContent().build();
     }
+
+    /** POST /api/songs/batch-delete — delete multiple songs (admin only) */
+    @PostMapping("/batch-delete")
+    public ResponseEntity<Void> batchDelete(@RequestBody java.util.List<Long> ids) {
+        songService.batchDelete(ids);
+        return ResponseEntity.ok().build();
+    }
 }

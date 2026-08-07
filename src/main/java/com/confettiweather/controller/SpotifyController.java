@@ -15,11 +15,15 @@ public class SpotifyController {
     @Autowired
     private SpotifyService spotifyService;
 
-    @GetMapping("/search")
-    public ResponseEntity<List<SpotifyTrackDto>> searchTracks(@RequestParam String query) {
+    @GetMapping("/artist-songs")
+    public ResponseEntity<List<SpotifyTrackDto>> getArtistSongs(@RequestParam String artistUrl) {
         try {
-            return ResponseEntity.ok(spotifyService.searchTracks(query));
+            return ResponseEntity.ok(spotifyService.getArtistSongs(artistUrl));
+        } catch (org.springframework.web.client.HttpServerErrorException e) {
+            System.err.println("Spotify API Error: " + e.getMessage());
+            return ResponseEntity.status(org.springframework.http.HttpStatus.BAD_GATEWAY).build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }

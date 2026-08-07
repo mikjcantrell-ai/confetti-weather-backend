@@ -12,6 +12,7 @@ import java.util.Optional;
 public class SongService {
 
     private final SongRepository songRepository;
+    private final com.confettiweather.repository.LyricRepository lyricRepository;
 
     /** All songs ordered by displayOrder then id. */
     public List<Song> getAllSongs() {
@@ -51,7 +52,17 @@ public class SongService {
         });
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public void deleteSong(Long id) {
+        lyricRepository.deleteBySongId(id);
         songRepository.deleteById(id);
+    }
+    
+    @org.springframework.transaction.annotation.Transactional
+    public void batchDelete(List<Long> ids) {
+        for (Long id : ids) {
+            lyricRepository.deleteBySongId(id);
+        }
+        songRepository.deleteAllById(ids);
     }
 }

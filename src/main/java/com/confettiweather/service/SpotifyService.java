@@ -52,7 +52,7 @@ public class SpotifyService {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         HttpEntity<Void> request = new HttpEntity<>(headers);
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(java.net.URI.create(url), HttpMethod.GET, request, String.class);
         try {
             return mapper.readTree(response.getBody());
         } catch (Exception e) {
@@ -60,28 +60,72 @@ public class SpotifyService {
         }
     }
 
-    public List<SpotifyTrackDto> searchTracks(String query) {
+    public List<SpotifyTrackDto> getArtistSongs(String queryOrUrl) {
         String token = getAccessToken();
-        query = query.replace("band:", "artist:");
-        String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8).replace("+", "%20");
-        String url = String.format("https://api.spotify.com/v1/search?q=%s&type=track&limit=20", encodedQuery);
+        String url;
+        
+        if (queryOrUrl.contains("artist/")) {
+            String[] parts = queryOrUrl.split("artist/");
+            String id = parts[1].split("\\?")[0];
+            url = String.format("https://api.spotify.com/v1/artists/%s/top-tracks?market=US", id);
+        } else if (queryOrUrl.contains("track/")) {
+            String[] parts = queryOrUrl.split("track/");
+            String id = parts[1].split("\\?")[0];
+            url = String.format("https://api.spotify.com/v1/tracks/%s", id);
+        } else {
+            String query = queryOrUrl.replace("band:", "artist:");
+            String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8).replace("+", "%20");
+            url = String.format("https://api.spotify.com/v1/search?q=%s&type=track", encodedQuery);
+        }
+        
+        System.out.println("Calling Spotify URL: " + url);
         JsonNode root = get(url, token);
-        JsonNode items = root.path("tracks").path("items");
-
         List<SpotifyTrackDto> tracks = new ArrayList<>();
-        if (items.isMissingNode()) return tracks;
-        for (JsonNode item : items) {
-            SpotifyTrackDto dto = new SpotifyTrackDto();
-            dto.setId(item.get("id").asText());
-            dto.setName(item.get("name").asText());
-            dto.setSpotifyUrl(item.path("external_urls").path("spotify").asText());
-            dto.setEmbedUrl("https://open.spotify.com/embed/track/" + dto.getId());
-            JsonNode images = item.path("album").path("images");
+        
+        if (queryOrUrl.contains("track/")) {
+            if (!root.isMissingNode() && root.has("id")) {
+                tracks.add(parseTrack(root));
+            }
+        } else {
+            JsonNode items = root.has("tracks") && root.get("tracks").isArray() ? root.get("tracks") : root.path("tracks").path("items");
+            if (!items.isMissingNode() && items.isArray()) {
+                for (JsonNode item : items) {
+                    if (item.has("id")) tracks.add(parseTrack(item));
+                }
+            }
+        }
+        return tracks;
+    }
+
+    private SpotifyTrackDto parseTrack(JsonNode item) {
+        SpotifyTrackDto dto = new SpotifyTrackDto();
+        dto.setId(item.get("id").asText());
+        dto.setTitle(item.get("name").asText());
+        dto.setSpotifyUrl(item.path("external_urls").path("spotify").asText());
+        dto.setEmbedUrl("https://open.spotify.com/embed/track/" + dto.getId());
+        
+        JsonNode artists = item.path("artists");
+        if (artists.isArray() && artists.size() > 0) {
+            dto.setArtistName(artists.get(0).get("name").asText());
+            dto.setArtistId(artists.get(0).get("id").asText());
+        }
+        
+        JsonNode album = item.path("album");
+        if (!album.isMissingNode()) {
+            dto.setAlbum(album.get("name").asText());
+            JsonNode images = album.path("images");
             if (images.isArray() && images.size() > 0) {
                 dto.setImageUrl(images.get(0).get("url").asText());
             }
-            tracks.add(dto);
+            if (album.has("release_date")) {
+                String releaseDate = album.get("release_date").asText();
+                if (releaseDate.length() >= 4) {
+                    try {
+                        dto.setReleaseYear(Integer.parseInt(releaseDate.substring(0, 4)));
+                    } catch (Exception e) {}
+                }
+            }
         }
-        return tracks;
+        return dto;
     }
 }
