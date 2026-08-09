@@ -1,11 +1,13 @@
 package com.confettiweather.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,9 +20,14 @@ import java.util.UUID;
 @RequestMapping("/api/admin/upload")
 public class UploadController {
 
-    private final Path uploadDir = Paths.get("uploads");
+    @Value("${upload.dir}")
+    private String uploadDirProperty;
 
-    public UploadController() {
+    private Path uploadDir;
+
+    @PostConstruct
+    public void init() {
+        uploadDir = Paths.get(uploadDirProperty);
         try {
             if (!Files.exists(uploadDir)) {
                 Files.createDirectories(uploadDir);
